@@ -1523,8 +1523,13 @@ window.dumpTree = function () {
 
 // ─── Shared WebView APIs ────────────────────────────────────────────────────
 
-// Set the current note ID (called from Swift before loading content)
+// Set the current note ID (called from Swift before loading content).
+// Clear any pending contentChanged debounce — it would fire with the NEW noteId
+// but carry the OLD note's content, corrupting the target note's persisted data.
+// The old note's content is already saved by serializeState() → cacheSerializedState()
+// which runs before setCurrentNoteId in every note-switch path.
 window.setCurrentNoteId = function (id) {
+  clearTimeout(debounceTimer);
   currentNoteId = id;
 };
 
